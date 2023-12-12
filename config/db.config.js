@@ -1,12 +1,15 @@
-import pool from "pg" ;
+import mongoose from "mongoose";
 
-const DB= new pool.Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
-});
-export default DB;
+mongoose.set("strictQuery" ,false);
 
-// Path: config/db.config.js
+const connectToDb= async () => {
+    await mongoose.connect(process.env.MONGO_URI)
+        .then(() => console.log("Connected to DB"))
+        .catch((err) => {
+            console.log(err);
+            process.exit(1);    
+        })
+}
+
+
+export default connectToDb; 

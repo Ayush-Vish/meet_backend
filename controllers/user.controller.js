@@ -72,9 +72,11 @@ const logout  = ( req ,res, next ) => {
 const getUserData = (req, res, next ) => { 
     try {
         if(req.user) {
+            console.log(req.user) ;
+            
             return new ApiResponse(res , 200 , "Success" , req.user);
         }else{
-            return new ApiResponse(res , 200 , "Success" , "No user data");
+            return new ApiResponse(res , 400 , "failure" , "No user data");
         }
     } catch (error) {
         return next(new Apperror(error.message , 400));

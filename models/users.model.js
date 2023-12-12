@@ -12,6 +12,7 @@ const userModel = new  mongoose.Schema({
         required : true,
         trim : true,
         maxlength : 50,
+        lowercase : true ,
         unique : true ,
         match : [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/ , "Please enter a valid email"]
     }, 
@@ -23,6 +24,12 @@ const userModel = new  mongoose.Schema({
     
     }, 
     domain :{
+        type : String ,
+        trim : true ,
+        maxlength : 50
+    
+    }, 
+    googleId : {
         type : String ,
         trim : true ,
         maxlength : 50

@@ -2,6 +2,7 @@ import {Strategy} from "passport-google-oauth2"
 import passport from "passport";
 import dotenv from "dotenv";
 import User from "../models/users.model.js";
+import Apperror from "../utils/Apperror.util.js";
 dotenv.config() ; 
 
 const GoogleStrategy = Strategy;
@@ -16,22 +17,28 @@ passport.use(new GoogleStrategy({
 
   },
   async function(request, accessToken, refreshToken, profile, done) {
-    const ifuserExists= await User.findOne({email : profile.email}) ;
-    if(ifuserExists) {
-      return done(null, profile);
+    try {
+      
+      const ifuserExists= await User.findOne({googleId : profile.id}) ;
+      if(ifuserExists) {
+         done(null, ifuserExists);
+      }
+      else {
+  
+        const user=  await User.create ({
+          name : profile.displayName , 
+          email : profile.email , 
+          picture : profile.picture, 
+          sub : profile.sub, 
+          domain : profile.domain , 
+          googleId : profile.id
+        })
+        await user.save() ;
+        done(null, user);
+      }
+    } catch (error) {
+      return next( new Apperror ("Error in making a new USer" , 400) )
     }
-    else {
-
-      const user=  await User.create ({
-        name : profile.displayName , 
-        email : profile.email , 
-        picture : profile.picture, 
-        sub : profile.sub, 
-        domain : profile.domain ,
-      })
-      await user.save() ;
-    }
-    return done(null, profile);
   }
 
 ));
@@ -39,12 +46,15 @@ passport.use(new GoogleStrategy({
 
 passport.serializeUser(function ( user,done)  {
 
-  done(null ,user) ;
+  done(null ,user._id) ;
 
 })
 
-passport.deserializeUser(function ( user,done)  {
-
-  done(null   ,user) ;
+passport.deserializeUser( async function ( id,done)  {
+  const user  =await User.findById(id ) ;
+  if(user)  {
+    return done(null , user) ;
+    
+  }
   
 })

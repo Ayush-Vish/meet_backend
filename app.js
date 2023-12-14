@@ -10,6 +10,8 @@ import morgan from "morgan";
 import ApiResponse from "./utils/ApiResponse.util.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import connectToDb from "./config/db.config.js";
+import socketRoutes from "./routes/socket.routes.js";
+import bodyParser from "body-parser";
 dotenv.config() ;   
 const app = express();    
 connectToDb() ; 
@@ -27,10 +29,15 @@ app.use(cors({
 }));
 
 
+app.use(bodyParser.json()) ;
 
 
 
 app.use("/api/v1/user/" , userRoute);
+
+// app.use("/api/v1/socket/" , socketRoutes);
+
+
 
 app.use(errorMiddleware); 
 

@@ -4,29 +4,48 @@ import {Server} from "socket.io";
 
 const PORT =    process.env.PORT || 4000;
 
-const io = new Server({
+// const SOCKET_PORT = process.env.SOCKET_PORT;
+
+
+const io = new Server(4002 , {
+
     cors : true
 });
 
 
 const emailToSocket = new Map() ;
+const socketToEmail = new Map() ;
 
 io.on("connection"  ,(socket) => { 
-        socket.on("join-room" , ({roomId , emailId}) => {
-            console.log("user joined " , emailId  , roomId);
+    console.log("Socket connected " , socket.id);
+    socket.on("room:join" , ({emailId , roomId}) => {
+        emailToSocket.set(emailId , socket.id) ;
+        socketToEmail.set(socket.id , emailId) ;
+        io.to(roomId).emit("user:joined" , {emailId , socketId: socket.id ,roomId })
+        socket.join(roomId) ;
+        console.log("Room joined " , emailId , roomId);
+        io.to(socket.id).emit("room:join" , {emailId , roomId}) ;
 
-            emailToSocket.set(emailId , socket.id);
-            socket.join(roomId);
-            
-            socket.emit("joined-room" , {roomId})
-            // Make the user of the room aware of the new user
+    })
+    
+    socket.on("user:call" ,({to  , offer } ) => {
+        io.to(to).emit("incomming:call" , {offer , from : socket.id}) ;
+    })
 
-            socket.broadcast.to(roomId).emit("user-joined" , emailId);
+    socket.on("call:accepted" ,( {to , answer}) => {
+        io.to(to).emit("call:accepted" , {answer , from : socket.id}) ;
 
-            socket.on("disconnect" , () => {
-                socket.broadcast.to(roomId).emit("user-disconnected "  + emailId , emailId)
-            })
-        })
+    })
+    
+    socket.on("peer:nego:needed" , ({to , offer}) => {
+        io.to(to).emit("peer:nego:needed" , {offer , from : socket.id}) ;
+    })
+
+    socket.on("peer:nego:done" , ({to , ans } ) => {
+        io.to(to).emit("peer:nego:final" , {ans , from : socket.id}) ;
+    })
+
+   
 })
 
 
@@ -34,4 +53,3 @@ app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`); 
 }); 
 
-io.listen(4001);

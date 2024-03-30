@@ -1,8 +1,9 @@
-import app from "./app.js";
+// import app from "./app.js";
 
 import {Server} from "socket.io";
-
-const PORT =    process.env.PORT || 4000;
+import express from "express";
+const app = express();
+const PORT = process.env.PORT || 4000;
 
 // const SOCKET_PORT = process.env.SOCKET_PORT;
 
@@ -33,23 +34,26 @@ io.on("connection"  ,(socket) => {
     })
 
     socket.on("call:accepted" ,( {to , answer}) => {
+        console.log("Call - accepted")
         io.to(to).emit("call:accepted" , {answer , from : socket.id}) ;
 
     })
     
     socket.on("peer:nego:needed" , ({to , offer}) => {
+        console.log("Peer nego needed")
         io.to(to).emit("peer:nego:needed" , {offer , from : socket.id}) ;
     })
 
-    socket.on("peer:nego:done" , ({to , ans } ) => {
-        io.to(to).emit("peer:nego:final" , {ans , from : socket.id}) ;
+    socket.on("peer:nego:done" , ({to , answer } ) => {
+        console.log("Peer nego done")
+        io.to(to).emit("peer:nego:final" , {answer , from : socket.id}) ;
     })
 
    
 })
 
 
-app.listen(PORT, () => {        
+app.listen(PORT || 3000 , () => {        
     console.log(`Server is listening on port ${PORT}`); 
 }); 
 
